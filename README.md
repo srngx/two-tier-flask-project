@@ -15,13 +15,13 @@ Before you begin, make sure you have the following installed:
 1. Clone this repository (if you haven't already):
 
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
+   git clone https://github.com/srngx/two-tier-flask-project.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd your-repo-name
+   cd two-tier-flask-project 
    ```
 
 3. Create a `.env` file in the project directory to store your MySQL environment variables:
@@ -125,6 +125,3 @@ docker run -d \
 - Be cautious when executing SQL queries directly. Validate and sanitize user inputs to prevent vulnerabilities like SQL injection.
 
 - If you encounter issues, check Docker logs and error messages for troubleshooting.
-
-```
-
