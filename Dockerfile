@@ -1,28 +1,30 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim-buster
+# Ultra-minimal multi-stage build
+FROM python:3.9-alpine AS builder
 
-# Set the working directory in the container
+# Install build dependencies
+RUN apk add --no-cache gcc musl-dev mariadb-dev pkgconfig
+
 WORKDIR /app
-
-# Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install app dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install to local directory
+RUN pip install --user --no-cache-dir mysqlclient \
+    && pip install --user --no-cache-dir -r requirements.txt
 
-# Copy the wait-for-db.sh script and make it executable
-COPY wait-for-db.sh /usr/local/bin/wait-for-db.sh
-RUN chmod +x /usr/local/bin/wait-for-db.sh
+# Ultra-minimal production stage
+FROM python:3.9-alpine
 
-# Copy the rest of the application code
+# Install only essential runtime library
+RUN apk add --no-cache mariadb-connector-c \
+    && rm -rf /var/cache/apk/*
+
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+
+# Add local packages to path
+ENV PATH=/root/.local/bin:$PATH
+
+WORKDIR /app
 COPY . .
 
-EXPOSE 5000
-
-ENTRYPOINT ["wait-for-db.sh", "mysql"]
-
-# Specify the command to run your application
 CMD ["python", "app.py"]
-
-
-

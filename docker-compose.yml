@@ -2,42 +2,50 @@ version: "3.8"
 
 services:
   mysql:
+    user: "${UID}:${GID}" 
+    image: mariadb:latest 
     container_name: mysql
-    image: mysql
-    environment: 
-      MYSQL_DATABASE: "devops"
-      MYSQL_ROOT_PASSWORD: "root"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: devops
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_INITDB_SKIP_TZINFO: 1
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql  # Named volume (better performance)
+      - ./message.sql:/docker-entrypoint-initdb.d/message.sql:ro
     networks:
       - two-tier
-    restart: always
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
-      interval: 10s
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 30s
       timeout: 5s
-      retries: 5
-      start_period: 60s
-  flask:
-    build:
-      context: .
-    container_name: two-tier-backend
+      retries: 3
+    restart: unless-stopped
+    # Minimal resource configuration
+    command: --innodb_buffer_pool_size=128M --max_connections=50
+
+  flask-app:
+    build: .
+    container_name: flask-app
+    image: archsarangx/two-tier-flask:alpine
     ports:
       - "5000:5000"
-
-    environment: # These env vars are now used by wait-for-db.sh and your Flask app
+    environment:
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: devops
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - two-tier
-    depends_on:
-      - mysql
-    restart: always
-   
+    restart: unless-stopped
+
 volumes:
-  mysql-data:
+  mysql_data:  # Named volume for better performance
 
 networks:
   two-tier:
