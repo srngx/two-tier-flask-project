@@ -24,7 +24,8 @@ services:
     container_name: two-tier-backend
     ports:
       - "5000:5000"
-    environment: 
+
+    environment: # These env vars are now used by wait-for-db.sh and your Flask app
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: root
@@ -34,13 +35,7 @@ services:
     depends_on:
       - mysql
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-
+   
 volumes:
   mysql-data:
 
