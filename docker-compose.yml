@@ -12,7 +12,7 @@ services:
     networks:
       - two-tier
     restart: always
-    healthchecks:
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
       interval: 10s
       timeout: 5s
@@ -34,7 +34,7 @@ services:
     depends_on:
       - mysql
     restart: always
-    healthchecks:
+    healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
       interval: 10s
       timeout: 5s
