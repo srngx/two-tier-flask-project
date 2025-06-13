@@ -25,6 +25,8 @@ services:
       MYSQL_DB: devops
     networks:
       - two-tier
+    depends_on:
+      - mysql
 
 volumes:
   mysql-data:
